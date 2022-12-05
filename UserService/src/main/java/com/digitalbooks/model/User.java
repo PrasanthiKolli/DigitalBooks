@@ -1,47 +1,84 @@
 package com.digitalbooks.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern.Flag;
+import javax.validation.constraints.Size;
 
 @Entity
+@Table(name = "Users", 
+uniqueConstraints = { 
+		@UniqueConstraint(columnNames = "userName"),
+		@UniqueConstraint(columnNames = "emailId"),
+		@UniqueConstraint(columnNames = "phoneNumber") 
+	})
 public class User {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(unique = true,nullable = false)
-	private int id;
-	private String userName;
-	private String password;
-	private String emailId;
-	private long phoneNumber;
-	private String roleId;
-	private String isActive;
+	Long id;
 	
+	@NotBlank(message = "userName must not be empty")
+    @Size(min = 3, max = 20, message = "length must be between 3 to 20 characters")
+	String userName;
 	
+	@NotBlank(message = "password must not be empty")
+    @Size(max = 120)
+	String password;
+	
+	@NotBlank(message = "emailId must not be empty")
+    @Size(max = 50)
+    @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}",
+            flags = Flag.CASE_INSENSITIVE, message = "please enter valid emailId")
+	String emailId;
+	
+	@NotBlank(message = "phoneNumber must not be empty")
+    @Size(min = 10, max = 10)
+	String phoneNumber;
+	
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(	name = "user_roles", 
+				joinColumns = @JoinColumn(name = "user_id"), 
+				inverseJoinColumns = @JoinColumn(name = "role_id"))
+	Set<Role> roles = new HashSet<>();
+	boolean isActive=true;
+
 	public User() {
-		super();
 	}
 
-	public User(int id, String userName, String password, String emailId, long phoneNumber, String roleId,
-			String isActive) {
-		super();
-		this.id = id;
+	public User(String userName, String password, String emailId, String phoneNumber) {
 		this.userName = userName;
 		this.password = password;
 		this.emailId = emailId;
 		this.phoneNumber = phoneNumber;
-		this.roleId = roleId;
-		this.isActive = isActive;
 	}
-
-	public int getId() {
+	
+	public User(String userName, String password, String emailId, String phoneNumber, Set<Role> roles) {
+		this.userName = userName;
+		this.password = password;
+		this.emailId = emailId;
+		this.phoneNumber = phoneNumber;
+		this.roles = roles;
+	}
+	
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -69,32 +106,34 @@ public class User {
 		this.emailId = emailId;
 	}
 
-	public long getPhoneNumber() {
+	public String getPhoneNumber() {
 		return phoneNumber;
 	}
 
-	public void setPhoneNumber(long phoneNumber) {
+	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
 
-	public String getRoleId() {
-		return roleId;
+	public Set<Role> getRoles() {
+		return roles;
 	}
 
-	public void setRoleId(String roleId) {
-		this.roleId = roleId;
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
 	}
 
-	public String getIsActive() {
+	public boolean isActive() {
 		return isActive;
 	}
 
-	public void setIsActive(String isActive) {
+	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
-	
-	
-	
-	
+
+	@Override
+	public String toString() {
+		return "User [id=" + id + ", userName=" + userName + ", password=" + password + ", emailId=" + emailId
+				+ ", phoneNumber=" + phoneNumber + ", roles=" + roles + ", isActive=" + isActive + "]";
+	}
 
 }
