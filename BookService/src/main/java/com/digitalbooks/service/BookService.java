@@ -1,7 +1,9 @@
 package com.digitalbooks.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,7 +58,7 @@ public class BookService {
 	}
 
 	public boolean updateBook(Book book, Long bookId, Long authorId) {
-		if(bookRespository.existsByAuthorIdAndId(authorId, bookId)) {
+		if (bookRespository.existsByAuthorIdAndId(authorId, bookId)) {
 			Book existedBook = getBook(bookId);
 			existedBook.setCategory(book.getCategory());
 			existedBook.setContent(book.getContent());
@@ -65,17 +67,28 @@ public class BookService {
 			existedBook.setPublisher(book.getPublisher());
 			existedBook.setTitle(book.getTitle());
 			existedBook.setLogo(book.getLogo());
-			
+			existedBook.setActive(book.getActive());
+
 			bookRespository.save(existedBook);
 			return true;
 		}
 		return false;
 	}
-	
+
 	public List<Book> searchBooks(String category, String title, String author, Long price, String publisher) {
-		List<Book> books = bookRespository.findBooksByCategoryAndTitleAndAuthorAndPriceAndPublisher(category, title, author, price, publisher);
+		List<Book> books = bookRespository.findBooksByCategoryAndTitleAndAuthorAndPriceAndPublisher(category, title,
+				author, price, publisher);
 		System.out.println(books);
 		return books;
 	}
 
+	public List<Book> getAllSubscribedBooks(List<Long> bookIds) {
+
+		List<Book> booksList = new ArrayList<>();
+		List<Book> allSubscribedBooks = bookRespository.findAllById(bookIds);
+		booksList = allSubscribedBooks.stream().filter(Book::getActive).collect(Collectors.toList());
+
+		return booksList;
+
+	}
 }

@@ -33,7 +33,7 @@ public class BookController {
 	 * Author can block/unblock his book
 	 */
 	@GetMapping("/author/{authorId}/blockBook/{bookId}")
-	public MessageResponse getSubscribedBook(@PathVariable("authorId") Long authorId, @PathVariable("bookId") Long bookId, @RequestParam("block") boolean block) {
+	public MessageResponse blockBook(@PathVariable("authorId") Long authorId, @PathVariable("bookId") Long bookId, @RequestParam("block") boolean block) {
 		if (bookService.blockBook(authorId, bookId, block)) return new MessageResponse("Book updated successfully");
 		return new MessageResponse("Book updation failed");
 	}
@@ -56,6 +56,27 @@ public class BookController {
 	public List<Book> readBook(@RequestParam("category") String category, @RequestParam("title") String title,
 			@RequestParam("author") String author, @RequestParam("price") Long price,  @RequestParam("publisher") String publisher) {
 		return bookService.searchBooks(category, title, author, price, publisher);
+	}
+	
+	/*
+	 * get book
+	 */
+	@GetMapping("/getBook/{book-id}")
+	public Book getBook(@PathVariable("book-id") Long bookId) {
+		return bookService.getBook(bookId);
+	}
+	
+	/*
+	 * get all subscribed books of user 
+	 */
+	@PostMapping("/book/getSubscribedBooks")
+	public ResponseEntity<?> getAllSubscribedBooks(@RequestBody List<Long> bookIds){
+		if(bookIds.isEmpty())
+			return ResponseEntity.badRequest().body("Invalid books");
+		List<Book> book = bookService.getAllSubscribedBooks(bookIds);
+		if(book.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not subscribed to any book"));
+		return ResponseEntity.ok(book);
 	}
 
 
