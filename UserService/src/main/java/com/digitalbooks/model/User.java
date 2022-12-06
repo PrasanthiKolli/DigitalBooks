@@ -32,21 +32,21 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 	
-	@NotBlank(message = "userName must not be empty")
-    @Size(min = 3, max = 20, message = "length must be between 3 to 20 characters")
+	@NotBlank(message = "userName should not be empty")
+    @Size(min = 8, max = 15, message = "length should be between 8 to 15 characters")
 	String userName;
 	
-	@NotBlank(message = "password must not be empty")
+	@NotBlank(message = "password should not be empty ")
     @Size(max = 120)
 	String password;
 	
-	@NotBlank(message = "emailId must not be empty")
+	@NotBlank(message = "Enter valid emailId")
     @Size(max = 50)
     @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}",
             flags = Flag.CASE_INSENSITIVE, message = "please enter valid emailId")
 	String emailId;
 	
-	@NotBlank(message = "phoneNumber must not be empty")
+	@NotBlank(message = "Enter valid Phone number")
     @Size(min = 10, max = 10)
 	String phoneNumber;
 	

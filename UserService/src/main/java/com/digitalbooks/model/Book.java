@@ -28,7 +28,7 @@ public class Book {
 	private String category;
 	
 	@NotNull
-	private Long price;
+	private float price;
 	
 	//@NotBlank
 	private int authorId;
@@ -44,7 +44,7 @@ public class Book {
 	private Date publishedDate;
 	
 	@NotBlank
-	@Size(min = 50, max = 2000)
+	@Size(min = 50, max = 100)
 	private String content;
 	
 	private boolean active;
@@ -81,11 +81,11 @@ public class Book {
 		this.category = value;
 	}
 
-	public long getPrice() {
+	public float getPrice() {
 		return price;
 	}
 
-	public void setPrice(long value) {
+	public void setPrice(float value) {
 		this.price = value;
 	}
 

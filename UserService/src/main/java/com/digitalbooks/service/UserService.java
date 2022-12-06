@@ -196,7 +196,7 @@ public class UserService {
 		RestTemplate restTemplate = new RestTemplate();
 		String uri = BOOK_SERVICE_URL+"/getBook/"+bookId;
 		Book book=restTemplate.getForObject(uri, Book.class);
-		if(ObjectUtils.isEmpty(book) && book.getActive()== false){
+		if(ObjectUtils.isEmpty(book) || book.getActive()== false){
 			return ResponseEntity.badRequest().body(new MessageResponse("bookId is not valid"));
 		}
 		subscription.setBookId(bookId);
