@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Email;
@@ -55,7 +56,12 @@ public class User {
 				inverseJoinColumns = @JoinColumn(name = "role_id"))
 	Set<Role> roles = new HashSet<>();
 	boolean isActive=true;
-
+	
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinTable(	name = "user_subscriptions", 
+				joinColumns = @JoinColumn(name = "user_id"),
+				inverseJoinColumns = @JoinColumn(name = "subscription_id"))
+	Set<Subscription> subscriptions = new HashSet<>();
 	public User() {
 	}
 
@@ -72,6 +78,14 @@ public class User {
 		this.emailId = emailId;
 		this.phoneNumber = phoneNumber;
 		this.roles = roles;
+	}
+	public User(String userName, String password, String emailId, String phoneNumber, Set<Role> roles,Set<Subscription> subscriptions) {
+		this.userName = userName;
+		this.password = password;
+		this.emailId = emailId;
+		this.phoneNumber = phoneNumber;
+		this.roles = roles;
+		this.subscriptions=subscriptions;
 	}
 	
 	public Long getId() {
@@ -121,6 +135,15 @@ public class User {
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
+	
+	public Set<Subscription> getSubscriptions() {
+		// TODO Auto-generated method stub
+		return subscriptions;
+	}
+	public void setSubscriptions(Set<Subscription> subscriptions) {
+		this.subscriptions = subscriptions;
+	}
+
 
 	public boolean isActive() {
 		return isActive;
@@ -135,5 +158,7 @@ public class User {
 		return "User [id=" + id + ", userName=" + userName + ", password=" + password + ", emailId=" + emailId
 				+ ", phoneNumber=" + phoneNumber + ", roles=" + roles + ", isActive=" + isActive + "]";
 	}
+	
+	
 
 }

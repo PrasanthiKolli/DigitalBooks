@@ -1,11 +1,14 @@
 package com.digitalbooks.payload.response;
 
 public class MessageResponse {
-	
+
 	private String message;
+	
+	public MessageResponse() {
+		
+	}
 
 	public MessageResponse(String message) {
-		super();
 		this.message = message;
 	}
 
@@ -17,6 +20,4 @@ public class MessageResponse {
 		this.message = message;
 	}
 	
-	
-
 }
