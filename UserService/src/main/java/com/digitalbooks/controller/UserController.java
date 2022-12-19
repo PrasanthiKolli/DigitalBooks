@@ -3,8 +3,10 @@ package com.digitalbooks.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +19,10 @@ import com.digitalbooks.model.Book;
 import com.digitalbooks.model.Subscription;
 import com.digitalbooks.payload.request.LoginRequest;
 import com.digitalbooks.payload.request.SignUpRequest;
+import com.digitalbooks.payload.request.SubscriptionRequest;
 import com.digitalbooks.service.UserService;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/api/v1/digitalbooks")
 public class UserController {
@@ -26,7 +30,7 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 
-	@PostMapping("/sign-up")
+	@PostMapping(value="/sign-up",produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
 		return userService.registerUser(signUpRequest);
 
@@ -76,7 +80,7 @@ public class UserController {
 
 	@GetMapping("/search")
 	public ResponseEntity<?> searchBooks(@RequestParam("category") String category, @RequestParam("title") String title,
-			@RequestParam("author") String author, @RequestParam("price") int price,
+			@RequestParam("author") String author, @RequestParam("price") float price,
 			@RequestParam("publisher") String publisher) {
 		return userService.searchBooks(category, title, author, price, publisher);
 
@@ -113,5 +117,32 @@ public class UserController {
 		return userService.fetchAllSubscribedBooks(userId);
 	}
 	
+	/*
+	 * Reader can fetch a subscribed book
+	 */
+	@GetMapping("/readers/{user-id}/books/{subscription-id}")
+	@PreAuthorize("hasRole('READER')")
+	public ResponseEntity<?> fetchSubscribedBook(@PathVariable("user-id") Long userId, @PathVariable("subscription-id") Long subscriptionId) {
+
+		return userService.fetchSubscribedBook(userId,subscriptionId);
+	}
+	
+	/*
+	 * Reader can a read a subscribed book
+	 */
+	@GetMapping("/readers/{user-id}/books/{subscription-id}/read")
+	@PreAuthorize("hasRole('READER')")
+	public ResponseEntity<?> readBook(@PathVariable("user-id") Long userId, @PathVariable("subscription-id") Long subscriptionId) {
+		return userService.readBok(userId,subscriptionId);
+		
+	}
+	/*
+	 * Author can fetch all books created by him
+	 */
+	@GetMapping("/author/{author-id}/getAllBooks")
+	@PreAuthorize("hasRole('AUTHOR')")
+	public ResponseEntity<?> getAuthorBooks(@PathVariable("author-id") Long authorId) {
+		return  userService.getAuthorBooks(authorId);
+	}
 	
 }

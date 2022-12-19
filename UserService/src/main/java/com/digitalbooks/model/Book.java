@@ -6,6 +6,7 @@ import java.util.Objects;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -28,6 +29,7 @@ public class Book {
 	private String category;
 	
 	@NotNull
+	@Min(0)
 	private float price;
 	
 	//@NotBlank
@@ -44,7 +46,7 @@ public class Book {
 	private Date publishedDate;
 	
 	@NotBlank
-	@Size(min = 50, max = 100)
+	@Size(min = 50, max = 2000)
 	private String content;
 	
 	private boolean active;

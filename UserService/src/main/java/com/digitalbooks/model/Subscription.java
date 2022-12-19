@@ -62,8 +62,8 @@ public class Subscription {
 		return subscriptionTime;
 	}
 
-	public void setSubscriptionTime(String subscriptionTime) {
-		this.subscriptionTime = Timestamp.valueOf(subscriptionTime);
+	public void setSubscriptionTime(Timestamp subscriptionTime) {
+		this.subscriptionTime = subscriptionTime;
 	}
 
 	@Override

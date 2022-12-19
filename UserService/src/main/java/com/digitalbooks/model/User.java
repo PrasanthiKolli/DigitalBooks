@@ -33,7 +33,7 @@ public class User {
 	Long id;
 	
 	@NotBlank(message = "userName should not be empty")
-    @Size(min = 8, max = 15, message = "length should be between 8 to 15 characters")
+    @Size(min = 3, max = 20, message = "length should be between 3 to 20 characters")
 	String userName;
 	
 	@NotBlank(message = "password should not be empty ")

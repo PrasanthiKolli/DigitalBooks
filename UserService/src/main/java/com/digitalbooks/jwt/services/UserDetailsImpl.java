@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.digitalbooks.model.Subscription;
 import com.digitalbooks.model.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -28,15 +29,18 @@ public class UserDetailsImpl implements UserDetails {
 
 	private Collection<? extends GrantedAuthority> authorities;
 	
+	private Set<Subscription> subscriptions;
+	
 
 	public UserDetailsImpl(Long id, String username, String email, String password, String phoneNumber,
-			Collection<? extends GrantedAuthority> authorities) {
+			Collection<? extends GrantedAuthority> authorities,Set<Subscription> subscriptions) {
 		this.id = id;
 		this.username = username;
 		this.email = email;
 		this.password = password;
 		this.phoneNumber = phoneNumber;
 		this.authorities = authorities;
+		this.subscriptions=subscriptions;
 	}
 
 	public static UserDetailsImpl build(User user) {
@@ -50,7 +54,8 @@ public class UserDetailsImpl implements UserDetails {
 				user.getEmailId(),
 				user.getPassword(), 
 				user.getPhoneNumber(),
-				authorities);
+				authorities,
+				user.getSubscriptions());
 	}
 
 	@Override
@@ -64,6 +69,11 @@ public class UserDetailsImpl implements UserDetails {
 
 	public String getEmail() {
 		return email;
+	}
+	
+
+	public Set<Subscription> getSubscriptions() {
+		return subscriptions;
 	}
 
 	@Override
@@ -121,6 +131,6 @@ public class UserDetailsImpl implements UserDetails {
 		UserDetailsImpl other = (UserDetailsImpl) obj;
 		return Objects.equals(authorities, other.authorities) && Objects.equals(email, other.email)
 				&& Objects.equals(id, other.id) && Objects.equals(password, other.password)
-				&& Objects.equals(phoneNumber, other.phoneNumber) && Objects.equals(username, other.username);
+				&& Objects.equals(phoneNumber, other.phoneNumber) && Objects.equals(username, other.username) &&  Objects.equals(subscriptions, other.subscriptions);
 	}
 }

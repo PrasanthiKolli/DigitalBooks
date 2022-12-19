@@ -1,5 +1,6 @@
 package com.digitalbooks.service;
 
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
+
 import com.digitalbooks.jwt.JwtUtils;
 import com.digitalbooks.jwt.services.UserDetailsImpl;
 import com.digitalbooks.model.Book;
@@ -25,6 +27,7 @@ import com.digitalbooks.model.Subscription;
 import com.digitalbooks.model.User;
 import com.digitalbooks.payload.request.LoginRequest;
 import com.digitalbooks.payload.request.SignUpRequest;
+import com.digitalbooks.payload.request.SubscriptionRequest;
 import com.digitalbooks.payload.response.JwtResponse;
 import com.digitalbooks.payload.response.MessageResponse;
 import com.digitalbooks.repository.RoleRepository;
@@ -110,7 +113,7 @@ public class UserService {
 				.collect(Collectors.toList());
 
 		return ResponseEntity.ok(
-				new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles));
+				new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles,userDetails.getSubscriptions()));
 	}
 
 	public ResponseEntity<?> createABook(HttpServletRequest request, Book book, Long id) {
@@ -128,8 +131,8 @@ public class UserService {
 
 		RestTemplate restTemplate = new RestTemplate();
 
-		MessageResponse result = restTemplate.postForObject(uri, book, MessageResponse.class);
-		return ResponseEntity.ok(result);
+		ResponseEntity<?> result = restTemplate.postForObject(uri, book, ResponseEntity.class);
+		return result;
 	}
 
 	public ResponseEntity<?> blockABook(int authorId, int bookId, boolean block) {
@@ -166,7 +169,7 @@ public class UserService {
 		return getResultResponseEntity(result);
 	}
 
-	public ResponseEntity<?> searchBooks(String category, String title, String author, int price, String publisher) {
+	public ResponseEntity<?> searchBooks(String category, String title, String author, float price, String publisher) {
 		if (ObjectUtils.isEmpty(category))
 			return ResponseEntity.badRequest().body(new MessageResponse("category is not valid"));
 		if (ObjectUtils.isEmpty(title))
@@ -193,11 +196,13 @@ public class UserService {
 	public ResponseEntity<?> subscribeABook(Subscription subscription, long bookId) {
 		if (ObjectUtils.isEmpty(bookId))
 			return ResponseEntity.badRequest().body(new MessageResponse("bookId is mandatory"));
+		Timestamp timestamp= new Timestamp(System.currentTimeMillis());
+		subscription.setSubscriptionTime(timestamp);
 		RestTemplate restTemplate = new RestTemplate();
 		String uri = BOOK_SERVICE_URL+"/getBook/"+bookId;
 		Book book=restTemplate.getForObject(uri, Book.class);
 		if(ObjectUtils.isEmpty(book) || book.getActive()== false){
-			return ResponseEntity.badRequest().body(new MessageResponse("bookId is not valid"));
+			return ResponseEntity.badRequest().body(new MessageResponse("ook is blocked or Book id not valid"));
 		}
 		subscription.setBookId(bookId);
 		Optional<User> isUserAvailable = userRepository.findById(subscription.getUserId());
@@ -276,5 +281,54 @@ public class UserService {
 		}
 		
 		return ResponseEntity.badRequest().body(new MessageResponse("invalid request"));
+	}
+	
+	public ResponseEntity<?> fetchSubscribedBook(Long userId, Long subscriptionId) {
+		if (ObjectUtils.isEmpty(userId) || !userRepository.existsById(userId))
+			//throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, UserUtils.USERID_INVALID);
+			return ResponseEntity.badRequest().body(new MessageResponse("user id is not valid"));
+		if (ObjectUtils.isEmpty(subscriptionId) || !subscriptionRepository.existsById(subscriptionId))
+			return ResponseEntity.badRequest().body(new MessageResponse("subscriptionId is not valid"));
+
+		Subscription subscription = getSubscription(userId, subscriptionId);
+		if(subscription != null && !ObjectUtils.isEmpty(subscription.getBookId())) {
+			String uri = BOOK_SERVICE_URL + "/book/" + subscription.getBookId() + "/getSubscribedBook";
+			RestTemplate restTemplate = new RestTemplate();
+			ResponseEntity<?> result = restTemplate.getForEntity(uri, Book.class);
+			return ResponseEntity.ok(result.getBody());
+		}
+		
+		return ResponseEntity.badRequest().body(new MessageResponse("invalid request"));
+	}
+	
+
+	public ResponseEntity<?> readBok(Long userId, Long subscriptionId) {
+		if (ObjectUtils.isEmpty(userId))
+			return ResponseEntity.badRequest().body(new MessageResponse("user id is not valid"));
+		if (ObjectUtils.isEmpty(subscriptionId))
+			return ResponseEntity.badRequest().body(new MessageResponse("subscription id is not valid"));
+		Subscription subscription = getSubscription(userId, subscriptionId);
+		if(subscription != null && !ObjectUtils.isEmpty(subscription.getBookId()))
+		{
+			String uri = BOOK_SERVICE_URL + "/book/" + subscription.getBookId() + "/readBook";
+			
+			RestTemplate restTemplate = new RestTemplate();
+			MessageResponse result = restTemplate.getForObject(uri, MessageResponse.class);
+			return ResponseEntity.ok(result);
+		}
+		return ResponseEntity.badRequest().body(new MessageResponse("Invalid request"));
+	}
+	
+	
+	public ResponseEntity<?> getAuthorBooks(Long authorId) {
+		if (ObjectUtils.isEmpty(authorId))
+			return ResponseEntity.badRequest().body(new MessageResponse("AuthorId is invalid"));
+		
+		String uri = BOOK_SERVICE_URL + "/author/" + authorId + "/getAuthorBooks";
+
+		RestTemplate restTemplate = new RestTemplate();
+
+		ResponseEntity<?> result = restTemplate.getForEntity(uri, List.class);
+		return result;
 	}
 }
