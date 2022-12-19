@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -31,7 +32,8 @@ public class Book {
 	private String category;
 	
 	@NotNull
-	private Long price;
+	@Min(0)
+	private float price;
 	
 	//@NotBlank
 	private Long authorId;
@@ -85,11 +87,11 @@ public class Book {
 		this.category = value;
 	}
 
-	public long getPrice() {
+	public float getPrice() {
 		return price;
 	}
 
-	public void setPrice(long value) {
+	public void setPrice(float value) {
 		this.price = value;
 	}
 

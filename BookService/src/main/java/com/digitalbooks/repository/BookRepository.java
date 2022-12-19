@@ -13,5 +13,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
 	@Query("select books from Book books where books.category = :category and books.title= :title and books.authorName=:author and books.price< :price and books.publisher= :publisher")
 	List<Book> findBooksByCategoryAndTitleAndAuthorAndPriceAndPublisher(String category, String title, String author,
-			Long price, String publisher);
+			float price, String publisher);
+
+	List<Book> findAllByAuthorId(Long authorId);
 }

@@ -1,12 +1,17 @@
 package com.digitalbooks.service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import com.digitalbooks.model.Book;
 import com.digitalbooks.repository.BookRepository;
@@ -18,43 +23,46 @@ public class BookService {
 	@Autowired
 	BookRepository bookRespository;
 
-	public MessageResponse saveBook(Book book, Long authorId) {
+	public ResponseEntity<?> createBook(Book book, Long authorId) {
 
 		try {
 			if (bookRespository.existsByAuthorIdAndTitle(authorId, book.getTitle())) {
-				return new MessageResponse("Book with same title exists!");
+				return ResponseEntity.badRequest().body("Book with same title exists");
 			}
+			book.setPublishedDate(Timestamp.valueOf(LocalDateTime.now()));
 			bookRespository.save(book);
 		} catch (Exception exception) {
-			return new MessageResponse("Error: " + exception.getMessage());
+			return ResponseEntity.internalServerError().body("Error: " + exception.getMessage());
 		}
 
-		return new MessageResponse("Book added successfully!");
+		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
 	public Book getBook(Long bookId) {
-
 		Optional<Book> book = bookRespository.findById(bookId);
 		if (book.isPresent())
 			return book.get();
 		return null;
 	}
+	
+	public String checkBook(Long bookId) {
+		return bookRespository.existsById(bookId) ? "BookFound" : "INVALID_BOOKID";
+	}
 
 	public boolean blockBook(Long authorId, Long bookId, boolean block) {
-		if (bookRespository.existsByAuthorIdAndId(authorId, bookId)) {
+		if(Boolean.TRUE.equals(bookRespository.existsByAuthorIdAndId(authorId, bookId))) {
 			Book book = getBook(bookId);
-			if (book.getActive() == block)
+			if(book.getActive() != block)
 				return false;
+			book.setActive(!block);
 
-			book.setActive(block);
-			book = bookRespository.save(book);
-			if (book.getActive() == block) {
+			Book book1 = bookRespository.save(book);
+			if(book1.getActive() != block) {
 				return true;
-			} else
+			} else 
 				return false;
 		} else
 			return false;
-
 	}
 
 	public boolean updateBook(Book book, Long bookId, Long authorId) {
@@ -75,7 +83,7 @@ public class BookService {
 		return false;
 	}
 
-	public List<Book> searchBooks(String category, String title, String author, Long price, String publisher) {
+	public List<Book> searchBooks(String category, String title, String author, float price, String publisher) {
 		List<Book> books = bookRespository.findBooksByCategoryAndTitleAndAuthorAndPriceAndPublisher(category, title,
 				author, price, publisher);
 		System.out.println(books);
@@ -90,5 +98,27 @@ public class BookService {
 
 		return booksList;
 
+	}
+
+	public MessageResponse readBook(Long bookId) {
+		if(bookRespository.existsById(bookId)) {
+			Book b= getBook(bookId);
+			if(b.getActive()) {
+				return new MessageResponse(b.getContent());
+			}
+		}
+		
+		return new MessageResponse("invalid Book request");
+	}
+
+	public List<Book> getAllAuthorBooks(Long authorId) {
+
+		List<Book> booksList = new ArrayList<>();
+		if(ObjectUtils.isEmpty(authorId))
+			return booksList;
+		
+		List<Book> books = new ArrayList<>();
+		books = bookRespository.findAllByAuthorId(authorId);
+		return books;
 	}
 }
