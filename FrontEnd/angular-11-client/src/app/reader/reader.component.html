@@ -1,0 +1,9 @@
+<div class="allbooks-container" ng-app="books App" ng-controller="books controller">   
+    <h5>Books subscribed by {{user.username}}</h5>  
+    <ul class="list-group">
+        <li *ngFor="let book of books">
+            <div>{{book.title}}</div>
+            <button (click)="unSubscribeBook(book.id)">unsubscribe</button>
+        </li>
+      </ul>
+  </div>

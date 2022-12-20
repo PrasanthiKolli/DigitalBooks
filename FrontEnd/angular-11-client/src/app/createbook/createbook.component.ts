@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Book } from '../entity/book';
 import { AuthorserviceService } from '../_services/authorservice.service';
 
 @Component({
@@ -10,25 +11,26 @@ export class CreatebookComponent {
 
   isSuccessful = false;
   errorMessage = "";
-  book : any = {
+  book : Book = {
     logo: null,
     title: null,
     publisher: null,
     category: null,
     content: null,
-    price: null
+    price: null,
+    id: null,
+    authorId: null,
+    authorName: null,
+    publishedDate: null,
+    active: null
   }
 
   constructor(private authorService: AuthorserviceService) { }
 
-  onCreate(){
+  createBook(){
     const{logo, title, publisher,category,content,price} = this.book;
     this.authorService.createBook(this.book).subscribe(data=> {
-      console.log(data.message);
       this.isSuccessful = true;
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 1000);
     },
     error=> {
       console.error(error);

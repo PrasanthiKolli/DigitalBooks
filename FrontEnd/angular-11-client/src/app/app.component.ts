@@ -13,7 +13,7 @@ export class AppComponent implements OnInit {
   showModeratorBoard = false;
   username?: string;
   isAuthor= false;
-
+  isReader=false;
   constructor(private tokenStorageService: TokenStorageService) { }
 
   ngOnInit(): void {
@@ -29,6 +29,9 @@ export class AppComponent implements OnInit {
       this.username = user.username;
       if(this.roles[0]==='ROLE_AUTHOR'){
         this.isAuthor=true;
+      }
+      if(this.roles[0]==='ROLE_READER'){
+        this.isReader=true;
       }
     }
   }

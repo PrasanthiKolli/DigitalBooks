@@ -33,7 +33,13 @@
         <a href="/user" class="nav-link" routerLink="user" *ngIf="!isAuthor">{{ username }}</a>
       </li>
       <li class="nav-item">
-        <a href="/createBook" class="nav-link" routerLink="createBook" *ngIf="isAuthor">Create book</a>
+        <a href="/createBook" class="nav-link" routerLink="createBook" *ngIf="isAuthor">Create Book</a>
+      </li>
+      <li class="nav-item">
+        <a href="/authorBooks" class="nav-link" routerLink="authorBooks" *ngIf="isAuthor">Books</a>
+      </li>
+      <li class="nav-item">
+        <a href="/reader" class="nav-link" routerLink="reader" *ngIf="isReader">Subscribed Books</a>
       </li>
       <li class="nav-item">
         <a href class="nav-link" (click)="logout()">Logout</a>

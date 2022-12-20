@@ -1,5 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { Book } from '../entity/book';
 import { TokenStorageService } from '../_services/token-storage.service';
 import { UserService } from '../_services/user.service';
 
@@ -9,63 +9,143 @@ import { UserService } from '../_services/user.service';
   templateUrl: './searchform.component.html',
   styleUrls: ['./searchform.component.css']
 })
-export class SearchformComponent  {
+export class SearchformComponent {
 
   isSearchSuccess = false;
+  isSearchFailed = false;
+  isSubscribe=false;
+  isUnSubscribe=false;
+  successMessage="";
   errorMessage = "";
-  isUserLoggedIn = this.tokenService.getUser() !== null;
-
-  searchForm : any = {
-    category:null,
-    title:null,
-    author:null,
-    price:null,
-    publisher:null
+  content:any[]=[];
+  books: any[] = [];
+  search: any = {
+    category: null,
+    title: null,
+    author: null,
+    price: null,
+    publisher: null
   };
-  
-  books : any[] = []
-  
-  book : any = {
+  book: Book = {
+    id: null,
     logo: null,
     title: null,
+    authorId: null,
+    authorName: null,
     publisher: null,
     category: null,
     content: null,
-    price: null
+    price: null,
+    publishedDate: null,
+    active: null
   }
 
   constructor(private userService: UserService, private tokenService: TokenStorageService) { }
-
-  onSearch(){
-    const {category, title, author,price,publisher} = this.searchForm;
-    this.userService.search(category, title, author,price,publisher).subscribe(
+  userLoggedIn = this.tokenService.getUser() !== null;
+  public Search() {
+    const { category, title, author, price, publisher } = this.search;
+    this.userService.search(category, title, author, price, publisher).subscribe(
       data => {
         console.log(data);
         this.isSearchSuccess = true;
-        this.books.push(data);
+        this.isSearchFailed=false;
+        for (let d of data) {
+          this.books.push(d);
+        }
       },
       error => {
         console.error(error);
-        this.isSearchSuccess = false;
-        if(error instanceof HttpErrorResponse){
-          console.error(error.error.message);
-          this.errorMessage = error.error.message
-        }
-        
+        this.isSearchFailed = true;
+        this.isSearchSuccess=false;
+        this.errorMessage = error.error.message
+
+
       }
     );
 
+
   }
 
-  onClick(book:any){
-    if(!this.isUserLoggedIn){
-      console.log("please login/signup");
+  checksubscribe(bookId: any) {
+    let subs : any[] = this.tokenService.getUser().subscriptions;
+    for(let sub of subs){
+      if(bookId === sub.bookId) {
+        return false;
+      }
     }
+    return true;
+  }
+  checkUnSubscribe(bookId: any){
+    let subs : any[] = this.tokenService.getUser().subscriptions;
+    for(let sub of subs){
+      if(bookId === sub.bookId && this.userService.verifyIfLessThan24Hrs(bookId)) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  oncancelSearch(){
-    this.isSearchSuccess = false;
+  public subscribeABook(bookId: any) {
+    this.userService.subscribeABook(bookId, this.tokenService.getUser().id).subscribe(
+      data => {
+        console.log(data);
+        let user = this.tokenService.getUser();
+        let subs = user.subscriptions;
+        subs.push({
+          userId:user.id,
+          bookId:bookId,
+          id:data.id,
+          subscriptionTime:data.subscriptionTime,
+          active:true
+        })
+        user.subscriptions = subs;
+        this.tokenService.saveUser(user);
+        this.successMessage="Subscription successful!";
+        this.isSubscribe=true;
+        setTimeout(() => {
+          this.isSubscribe=false;
+          this.successMessage="";
+        }, 2500);
+      },
+      error => {
+        console.error(error);
+        this.isSubscribe=false;
+      }
+    )
   }
+  public unSubscribeBook(bookId: any) {
+    let subs : any[] = this.tokenService.getUser().subscriptions;
+    let subId:number;
+    for(let sub of subs){
+      if(bookId === sub.bookId) {
+        subId = sub.id;
+        this.cancelSubscription(subId);
+      }
+  }
+}
+cancelSubscription(subId:number){
+  this.userService.cancelSubscription(subId, this.tokenService.getUser().id).subscribe(
+    data=>{
+      console.log(data);
+      let user = this.tokenService.getUser();
+      let subs = user.subscriptions;
+      subs = subs.filter((sub: { id: number; }) => sub.id !== subId)
+      user.subscriptions = subs;
+      this.tokenService.saveUser(user);
+      this.successMessage="Cancelled subscription successfully!";
+      this.isUnSubscribe=true;
+      setTimeout(() => {
+        this.isUnSubscribe=false;
+        this.successMessage="";
+      }, 2500);
+    },
+    error=>{
+      console.error(error);
+    }
+  );
+}
+
+
 
 
 }

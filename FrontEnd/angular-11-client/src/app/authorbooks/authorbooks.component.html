@@ -1,0 +1,18 @@
+<div class="allbooks-container" ng-app="books App" ng-controller="books controller">
+    <h5>Books created by {{user.username}}</h5>
+      
+      <ul class="list-group">
+        <li class="list-group-item" *ngFor="let book of books">
+          <div class="book-container"  (click)="onClick(book)" [routerLink]="['/book', book.id]">
+            <img src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="" width="25" height="20">
+            <br>
+            {{book.title}}
+          </div>
+          <div class="book-edit-container">
+            <button (click)="onUpdate(book)" [routerLink]="['/updateBook']">Update</button>
+            <button (click)="block(book.id,book)" *ngIf="book.active">Block</button>
+            <button (click)="unBlock(book.id,book)" *ngIf="!book.active">UnBlock</button>
+          </div>
+        </li>
+      </ul>
+  </div>
